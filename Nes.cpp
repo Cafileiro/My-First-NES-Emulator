@@ -1,53 +1,93 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <cstdint>
+
+
+void Run();
+void Reset();
+void emulateCpu();
 
 // Program Counter point to the next byte to process in memory
-unsigned short ProgramCounter;
+u_int16_t ProgramCounter;
 // math and bitwise operations register
-char A;
+u_int8_t A;
 // Index and general purpose register X
-char X;
+u_int8_t X;
 // Index and general purpose register Y
-char Y;
+u_int8_t Y;
 
-char* RAM = new char[0x800]; // 2KB internal RAM
-char* ROM = new char[0x8000]; // 32KB rom RAM (for now, not all games fit in here)
+u_int8_t* RAM = new u_int8_t[0x800]; // 2KB internal RAM
+u_int8_t* ROM = new u_int8_t[0x8000]; // 32KB rom RAM (for now, not all games fit in here)
 
-char Filepath[] = "";
+char Filepath[] = "/home/rafael/Documentos/My-First-NES-Emulator/__PatreonRoms/1_Example.nes";
 
-char Read (unsigned short address){
+bool Cpu_halted = false;   
 
-    if (address < 0x0800){ 
-        return RAM[address];
+u_int8_t Read (u_int16_t address){
+
+    if (address <= 0x1FFF){
+        return RAM[address & 0x07FF];// mirror every 2KB
     }
-    else if (address >= 0x0800 && address <= 0x1FFF){
-        address = address & 0x07FF; // mirror every 2KB
-        //TODO: Mirroring is not working as expected, need to check why
-        return address;
-    }
-        
     else if (address >= 0x8000){
         return ROM[address - 0x8000];
     }
-    return 0;
+    return -1; // unhandled read
 }
 
 void Reset(){
-    char header[16];
+    u_int8_t header[16];
     std::ifstream rom(Filepath, std::ios::binary);
     // We don't care about the header for now
-    rom.read(header, 0x10); // read header
-    rom.read(ROM, 0x8000); // read up to 32KB - 16 bytes(header) of ROM data
-    char PCL = Read(0xFFFC);
-    char PCH = Read(0xFFFD);
-    ProgramCounter = (unsigned short)((PCH * 0x100) + PCL);
+    rom.read(reinterpret_cast<char*>(header), 0x10); // read header
+    rom.read(reinterpret_cast<char*>(ROM), 0x8000); // read up to 32KB - 16 bytes(header) of ROM data
+    u_int8_t PCL = Read(0xFFFC);
+    u_int8_t PCH = Read(0xFFFD);
+    ProgramCounter = (u_int16_t)((PCH * 0x100) + PCL);
+    Cpu_halted = false;
+    Run();
     rom.close();
 }
+
+void Run(){
+    while(Cpu_halted == false){
+        emulateCpu();
+    }
+}
+void emulateCpu(){
+    u_int8_t opcode = Read(ProgramCounter);
+    std ::cout << "Executing opcode: " << std::hex << (int)opcode << " at address: " << std::hex << (u_int16_t)ProgramCounter << std::endl;
+    ProgramCounter++;
+    switch(opcode){
+        case 0x02: //HTL - Halt CPU
+            Cpu_halted = true;
+            break;
+        case 0xA9: // LDA Immediate
+            A = Read(ProgramCounter);
+            ProgramCounter++;
+            break;
+        case 0xA0: // LDY Immediate
+            Y = Read(ProgramCounter);
+            ProgramCounter++;
+            break;
+        case 0xA2: // LDX Immediate
+            X = Read(ProgramCounter);
+            ProgramCounter++;
+            break;
+        default:
+            std::cout << "Unhandled opcode: " << std::hex << (int)opcode << " at address: " << std::hex << (uint16_t)(ProgramCounter - 1) << std::endl;
+            Cpu_halted = true;
+            break;
+    }
+}
+
 
 int main() {
     
     Reset(); 
-    std::cout << "Program Counter initialized to: " << std::hex << ProgramCounter << std::endl;
+    std::cout << "A Final value: " << std::hex << (uint16_t)A << std::endl;
+    std::cout << "X Final value: " << std::hex << (uint16_t)X << std::endl;
+    std::cout << "Y Final value: " << std::hex << (uint16_t)Y << std::endl;
+
     return 0;
 }
