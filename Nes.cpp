@@ -2,7 +2,7 @@
 #include <fstream>
 #include <string>
 #include <cstdint>
-
+#include "env.h"   
 
 void Run();
 void Reset();
@@ -20,7 +20,9 @@ u_int8_t Y;
 u_int8_t* RAM = new u_int8_t[0x800]; // 2KB internal RAM
 u_int8_t* ROM = new u_int8_t[0x8000]; // 32KB rom RAM (for now, not all games fit in here)
 
-char Filepath[] = "/home/rafael/Documentos/My-First-NES-Emulator/__PatreonRoms/1_Example.nes";
+char* Filepath = NES_ROM_PATH; // path to the .nes file to load
+
+
 
 bool Cpu_halted = false;   
 
@@ -58,6 +60,7 @@ void emulateCpu(){
     u_int8_t opcode = Read(ProgramCounter);
     std ::cout << "Executing opcode: " << std::hex << (int)opcode << " at address: " << std::hex << (u_int16_t)ProgramCounter << std::endl;
     ProgramCounter++;
+    int cycle = 0;
     switch(opcode){
         case 0x02: //HTL - Halt CPU
             Cpu_halted = true;
@@ -65,14 +68,17 @@ void emulateCpu(){
         case 0xA9: // LDA Immediate
             A = Read(ProgramCounter);
             ProgramCounter++;
+            cycle = 2;
             break;
         case 0xA0: // LDY Immediate
             Y = Read(ProgramCounter);
             ProgramCounter++;
+            cycle = 2;
             break;
         case 0xA2: // LDX Immediate
             X = Read(ProgramCounter);
             ProgramCounter++;
+            cycle = 2;
             break;
         default:
             std::cout << "Unhandled opcode: " << std::hex << (int)opcode << " at address: " << std::hex << (uint16_t)(ProgramCounter - 1) << std::endl;
@@ -81,6 +87,7 @@ void emulateCpu(){
     }
 }
 
+//TODO: Implement Write function to write to memory 
 
 int main() {
     
