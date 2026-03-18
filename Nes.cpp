@@ -153,6 +153,17 @@ void emulateCpu(){
                 cycle = 0;
                 break;
 
+            case 0x86 : // STX Zero Page 3 cycles
+                u_int8_t temp = Read(ProgramCounter);
+                cycle++;
+                ProgramCounter++;
+
+                Write(temp, X);
+                cycle++;
+                
+                cycle = 0;
+                break;
+            
             case 0x85 : // STA Zero Page 3 cycles
                 u_int8_t temp = Read(ProgramCounter);
                 cycle++;
