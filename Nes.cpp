@@ -133,7 +133,16 @@ void emulateCpu(){
 }
 
 void Write(u_int16_t Address, u_int8_t Value){
-
+    if (Address <= 0x1FFF){
+        RAM[Address & 0x07FF] = Value; // mirror every 2KB
+        std::cout << "Writing value: " << std::hex << (int)Value << " to RAM at address: " << std::hex << Address << std::endl;
+    }
+    else if (Address >= 0x8000){
+        std::cout << "Error: Attempting to write to ROM at address: " << std::hex << Address << " with value: " << std::hex << (int)Value << std::endl;
+    }
+    else {
+        std::cout << "Error: Attempting to write to unhandled address: " << std::hex << Address << " with value: " << std::hex << (int)Value << std::endl;
+    }
 }
 
 int main() {
