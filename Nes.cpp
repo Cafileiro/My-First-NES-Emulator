@@ -7,7 +7,7 @@
 void Run();
 void Reset();
 void emulateCpu();
-u_int16_t Read(u_int16_t address);
+u_int8_t Read(u_int16_t address);
 
 // Program Counter point to the next byte to process in memory
 u_int16_t ProgramCounter;
