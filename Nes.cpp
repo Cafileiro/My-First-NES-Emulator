@@ -26,6 +26,13 @@ char* Filepath = NES_ROM_PATH; // path to the .nes file to load
 
 bool Cpu_halted = false;   
 
+/**
+ * Read function to read from memory. It takes an address as input and returns the value at that address.
+ * Handles mirroring for RAM and ROM.
+ * @param address The address to read from in 16 bit format
+ * @return The value at the specified address, or -1 if the address is not handled
+ */
+
 u_int8_t Read (u_int16_t address){
 
     if (address <= 0x1FFF){
@@ -36,7 +43,11 @@ u_int8_t Read (u_int16_t address){
     }
     return -1; // unhandled read
 }
-
+/**
+ * Reset function to initialize the CPU and load the ROM. 
+ * It reads the header of the ROM file, loads the ROM data into memory, and sets the program counter to the address specified in the reset vector (0xFFFC and 0xFFFD).
+ * It then starts the CPU emulation by calling the Run function.
+ */
 void Reset(){
     u_int8_t header[16];
     std::ifstream rom(Filepath, std::ios::binary);
@@ -51,11 +62,21 @@ void Reset(){
     rom.close();
 }
 
+/**
+ * Run function to start the CPU emulation. It continuously calls the emulateCpu function until the CPU is halted.
+ */
+
 void Run(){
     while(Cpu_halted == false){
         emulateCpu();
     }
 }
+/**
+ * Emulate CPU function to execute instructions. It reads the opcode at the current program counter, decodes it, and executes the corresponding instruction. 
+ * For now, it only handles a few opcodes (LDA, LDY, LDX, and HTL). It also prints the opcode being executed and the address for debugging purposes.
+ * 
+ */
+
 void emulateCpu(){
     u_int8_t opcode = Read(ProgramCounter);
     std ::cout << "Executing opcode: " << std::hex << (int)opcode << " at address: " << std::hex << (u_int16_t)ProgramCounter << std::endl;
