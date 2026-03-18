@@ -153,6 +153,26 @@ void emulateCpu(){
                 cycle = 0;
                 break;
 
+            case 0x84 : // STY Zero Page 3 cycles
+                u_int8_t temp = Read(ProgramCounter);
+                cycle++;
+                ProgramCounter++;
+
+                Write(temp, Y);
+                cycle++;
+                
+                cycle = 0;
+                break;
+
+            case 0x85 : // STA Zero Page 3 cycles
+                u_int8_t temp = Read(ProgramCounter);
+                cycle++;
+                ProgramCounter++;
+                Write(temp, A);
+                cycle++;
+                cycle = 0;
+                break;
+
             case 0x86 : // STX Zero Page 3 cycles
                 u_int8_t temp = Read(ProgramCounter);
                 cycle++;
@@ -163,16 +183,23 @@ void emulateCpu(){
                 
                 cycle = 0;
                 break;
-            
-            case 0x85 : // STA Zero Page 3 cycles
-                u_int8_t temp = Read(ProgramCounter);
+
+            case 0x8C : // STY Absolute 4 cycles
+                u_int8_t lowByte = Read(ProgramCounter);
                 cycle++;
                 ProgramCounter++;
-                Write(temp, A);
+
+                u_int8_t highByte = Read(ProgramCounter);
                 cycle++;
+                ProgramCounter++;
+
+                u_int16_t address =  highByte * 256 + lowByte;
+                Write(address, Y);
+                cycle++;
+
                 cycle = 0;
                 break;
-            
+
             case 0x8D : // STA Absolute 4 cycles
                 u_int8_t lowByte = Read(ProgramCounter);
                 cycle++;
@@ -188,6 +215,22 @@ void emulateCpu(){
                 cycle = 0;
                 break;
 
+            case 0x8E : // STX Absolute 4 cycles
+                u_int8_t lowByte = Read(ProgramCounter);
+                cycle++;
+                ProgramCounter++;
+
+                u_int8_t highByte = Read(ProgramCounter);
+                cycle++;
+                ProgramCounter++;
+
+                u_int16_t address =  highByte * 256 + lowByte;
+                Write(address, X);
+                cycle++;
+
+                cycle = 0;
+                break;
+                
             default:
                 std::cout << "Unhandled opcode: " << std::hex << (int)opcode << " at address: " << std::hex << (uint16_t)(ProgramCounter - 1) << std::endl;
                 Cpu_halted = true;
