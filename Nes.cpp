@@ -99,37 +99,65 @@ void emulateCpu(){
 
             
             
-            case 0x02: //HTL - Halt CPU
+            case 0x02: //HTL - Halt CPU 1 cycle
                 Cpu_halted = true;
                 cycle = 0;
                 break;
             
-            case 0xA9: // LDA Immediate
+            case 0xA9: // LDA Immediate 2 cycles
                 A = Read(ProgramCounter);
                 cycle++;
                 ProgramCounter++;
                 cycle = 0;
                 break;
         
-            case 0xA0: // LDY Immediate
+            case 0xA0: // LDY Immediate 2 cycles
                 Y = Read(ProgramCounter);
                 cycle++;
                 ProgramCounter++;
                 cycle = 0;
                 break;
             
-            case 0xA2: // LDX Immediate
+            case 0xA2: // LDX Immediate 2 cycles
                 X = Read(ProgramCounter);
                 cycle++;
                 ProgramCounter++;
                 cycle = 0;
                 break;
             
-            case 0x85 : // STA Zero Page
+            case 0xA5: // LDA Zero Page 3 cycles
+                u_int8_t adress = Read(ProgramCounter);
+                cycle++;
+                ProgramCounter++;
+
+                u_int8_t value = Read(adress);
+                cycle++;
+                ProgramCounter++;
+
+                A = value;
+                cycle = 0;
+                break;
+
+            case 0x85 : // STA Zero Page 3 cycles
                 u_int8_t temp = Read(ProgramCounter);
                 cycle++;
                 ProgramCounter++;
                 Write(temp, A);
+                cycle++;
+                cycle = 0;
+                break;
+            
+            case 0x8D : // STA Absolute 4 cycles
+                u_int8_t lowByte = Read(ProgramCounter);
+                cycle++;
+                ProgramCounter++;
+
+                u_int8_t highByte = Read(ProgramCounter);
+                cycle++;
+                ProgramCounter++;
+
+                u_int16_t address =  highByte * 256 + lowByte;
+                Write(address, A);
                 cycle++;
                 cycle = 0;
                 break;
