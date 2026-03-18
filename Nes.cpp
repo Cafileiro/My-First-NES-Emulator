@@ -106,22 +106,34 @@ void emulateCpu(){
             
             case 0xA9: // LDA Immediate
                 A = Read(ProgramCounter);
+                cycle++;
                 ProgramCounter++;
                 cycle = 0;
                 break;
         
             case 0xA0: // LDY Immediate
                 Y = Read(ProgramCounter);
+                cycle++;
                 ProgramCounter++;
                 cycle = 0;
                 break;
             
             case 0xA2: // LDX Immediate
                 X = Read(ProgramCounter);
+                cycle++;
                 ProgramCounter++;
                 cycle = 0;
                 break;
             
+            case 0x85 : // STA Zero Page
+                u_int8_t temp = Read(ProgramCounter);
+                cycle++;
+                ProgramCounter++;
+                Write(temp, A);
+                cycle++;
+                cycle = 0;
+                break;
+
             default:
                 std::cout << "Unhandled opcode: " << std::hex << (int)opcode << " at address: " << std::hex << (uint16_t)(ProgramCounter - 1) << std::endl;
                 Cpu_halted = true;
