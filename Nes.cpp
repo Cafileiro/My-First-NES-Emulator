@@ -8,24 +8,23 @@ void Run();
 void Reset();
 void emulateCpu();
 u_int8_t Read(u_int16_t address);
-
-// Program Counter point to the next byte to process in memory
-u_int16_t ProgramCounter;
-// math and bitwise operations register
-u_int8_t A;
-// Index and general purpose register X
-u_int8_t X;
-// Index and general purpose register Y
-u_int8_t Y;
-
-u_int8_t* RAM = new u_int8_t[0x800]; // 2KB internal RAM
-u_int8_t* ROM = new u_int8_t[0x8000]; // 32KB rom RAM (for now, not all games fit in here)
-
-char* Filepath = NES_ROM_PATH; // path to the .nes file to load
+void Write(u_int16_t Address, u_int8_t Value);
 
 
+u_int16_t ProgramCounter;   // Program Counter point to the next byte to process in memory
+
+u_int8_t A; // math and bitwise operations register
+u_int8_t X; // Index and general purpose register X
+u_int8_t Y; // Index and general purpose register Y
+u_int8_t* RAM = new u_int8_t[0x800];    // 2KB internal RAM
+u_int8_t* ROM = new u_int8_t[0x8000];   // 32KB rom RAM (for now, not all games fit in here)
+u_int8_t opcode; // current opcode being executed
+
+char* Filepath = NES_ROM_PATH;  // path to the .nes file to load
 
 bool Cpu_halted = false;   
+
+int cycle = 0;
 
 /**
  * Read function to read from memory. It takes an address as input and returns the value at that address.
@@ -85,46 +84,57 @@ void Run(){
 
 void emulateCpu(){
     
-    u_int8_t opcode = Read(ProgramCounter);
-    
-    int cycle = 0;
-
-    std ::cout << "Executing opcode: " << std::hex << (int)opcode << " at address: " << std::hex << (u_int16_t)ProgramCounter << std::endl;
-    
-    ProgramCounter++;
-    
-    switch(opcode){
-        
-        case 0x02: //HTL - Halt CPU
-            Cpu_halted = true;
-            break;
-        
-        case 0xA9: // LDA Immediate
-            A = Read(ProgramCounter);
-            ProgramCounter++;
-            cycle = 2;
-            break;
-    
-        case 0xA0: // LDY Immediate
-            Y = Read(ProgramCounter);
-            ProgramCounter++;
-            cycle = 2;
-            break;
-        
-        case 0xA2: // LDX Immediate
-            X = Read(ProgramCounter);
-            ProgramCounter++;
-            cycle = 2;
-            break;
-        
-        default:
-            std::cout << "Unhandled opcode: " << std::hex << (int)opcode << " at address: " << std::hex << (uint16_t)(ProgramCounter - 1) << std::endl;
-            Cpu_halted = true;
-            break;
+    if(cycle == 0)
+    {
+        opcode = Read(ProgramCounter);
+        ProgramCounter++;
+        cycle++;
+        std ::cout << "Executing opcode: " << std::hex << (int)opcode << " at address: " << std::hex << (u_int16_t)ProgramCounter << std::endl; 
     }
+    else 
+    {
+        
+        switch(opcode)
+        {
+
+            
+            
+            case 0x02: //HTL - Halt CPU
+                Cpu_halted = true;
+                cycle = 0;
+                break;
+            
+            case 0xA9: // LDA Immediate
+                A = Read(ProgramCounter);
+                ProgramCounter++;
+                cycle = 0;
+                break;
+        
+            case 0xA0: // LDY Immediate
+                Y = Read(ProgramCounter);
+                ProgramCounter++;
+                cycle = 0;
+                break;
+            
+            case 0xA2: // LDX Immediate
+                X = Read(ProgramCounter);
+                ProgramCounter++;
+                cycle = 0;
+                break;
+            
+            default:
+                std::cout << "Unhandled opcode: " << std::hex << (int)opcode << " at address: " << std::hex << (uint16_t)(ProgramCounter - 1) << std::endl;
+                Cpu_halted = true;
+                break;
+        }
+    
+    } 
+    
 }
 
-//TODO: Implement Write function to write to memory 
+void Write(u_int16_t Address, u_int8_t Value){
+
+}
 
 int main() {
     
