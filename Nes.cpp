@@ -132,8 +132,23 @@ void emulateCpu(){
 
                 u_int8_t value = Read(adress);
                 cycle++;
+
+                A = value;
+                cycle = 0;
+                break;
+
+            case 0xAD : // LDA Absolute 4 cycles
+                u_int8_t lowByte = Read(ProgramCounter);
+                cycle++;
                 ProgramCounter++;
 
+                u_int8_t highByte = Read(ProgramCounter);
+                cycle++;
+                ProgramCounter++;
+
+                u_int16_t address =  highByte * 256 + lowByte;
+                u_int16_t value = Read(address);
+                cycle++;
                 A = value;
                 cycle = 0;
                 break;
