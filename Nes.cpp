@@ -7,6 +7,7 @@
 void Run();
 void Reset();
 void emulateCpu();
+u_int16_t Read(u_int16_t address);
 
 // Program Counter point to the next byte to process in memory
 u_int16_t ProgramCounter;
@@ -33,7 +34,7 @@ bool Cpu_halted = false;
  * @return The value at the specified address, or -1 if the address is not handled
  */
 
-u_int8_t Read (u_int16_t address){
+u_int8_t Read(u_int16_t address){
 
     if (address <= 0x1FFF){
         return RAM[address & 0x07FF];// mirror every 2KB
@@ -49,13 +50,18 @@ u_int8_t Read (u_int16_t address){
  * It then starts the CPU emulation by calling the Run function.
  */
 void Reset(){
+    
     u_int8_t header[16];
+    
     std::ifstream rom(Filepath, std::ios::binary);
     // We don't care about the header for now
+    
     rom.read(reinterpret_cast<char*>(header), 0x10); // read header
     rom.read(reinterpret_cast<char*>(ROM), 0x8000); // read up to 32KB - 16 bytes(header) of ROM data
+    
     u_int8_t PCL = Read(0xFFFC);
     u_int8_t PCH = Read(0xFFFD);
+    
     ProgramCounter = (u_int16_t)((PCH * 0x100) + PCL);
     Cpu_halted = false;
     Run();
@@ -78,29 +84,39 @@ void Run(){
  */
 
 void emulateCpu(){
+    
     u_int8_t opcode = Read(ProgramCounter);
-    std ::cout << "Executing opcode: " << std::hex << (int)opcode << " at address: " << std::hex << (u_int16_t)ProgramCounter << std::endl;
-    ProgramCounter++;
+    
     int cycle = 0;
+
+    std ::cout << "Executing opcode: " << std::hex << (int)opcode << " at address: " << std::hex << (u_int16_t)ProgramCounter << std::endl;
+    
+    ProgramCounter++;
+    
     switch(opcode){
+        
         case 0x02: //HTL - Halt CPU
             Cpu_halted = true;
             break;
+        
         case 0xA9: // LDA Immediate
             A = Read(ProgramCounter);
             ProgramCounter++;
             cycle = 2;
             break;
+    
         case 0xA0: // LDY Immediate
             Y = Read(ProgramCounter);
             ProgramCounter++;
             cycle = 2;
             break;
+        
         case 0xA2: // LDX Immediate
             X = Read(ProgramCounter);
             ProgramCounter++;
             cycle = 2;
             break;
+        
         default:
             std::cout << "Unhandled opcode: " << std::hex << (int)opcode << " at address: " << std::hex << (uint16_t)(ProgramCounter - 1) << std::endl;
             Cpu_halted = true;
