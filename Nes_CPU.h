@@ -20,8 +20,14 @@ private:
     uint8_t  tmp_high = 0x00;
     uint16_t tmp_addr = 0x0000;
 
-    // update the NZ flags
-    //void setFlagsNZ(uint8_t value);
+    bool flag_Carry;
+    bool flag_Zero;
+    bool flag_InterruptDisable;
+    bool flag_Decimal;
+    bool flag_Overflow;
+    bool flag_Negative;
+
+    void update_flags(uint8_t data);
 
 public:
 

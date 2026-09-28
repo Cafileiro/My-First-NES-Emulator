@@ -31,6 +31,13 @@ void Nes_CPU::reset(){
     tmp_low = m_bus->read(0xFFFC);
     programCounter = (uint16_t)((tmp_high << 8) | tmp_low);
 
+    flag_Carry = false;
+    flag_Decimal = false;
+    flag_InterruptDisable = true;
+    flag_Negative = false;
+    flag_Overflow = false;
+    flag_Zero = false;
+    
     A = 0;
     X = 0;
     Y = 0;
@@ -41,6 +48,15 @@ void Nes_CPU::reset(){
 
 void Nes_CPU::connectRom(){
     m_bus->initializeRom();
+}
+
+void Nes_CPU::update_flags(u_int8_t data){
+
+    if(data == 0) flag_Zero = true;
+    else flag_Zero = false;
+
+    if(data >127) flag_Negative = true;
+    else flag_Negative = false;
 }
 
 void Nes_CPU::clock(){
@@ -124,7 +140,7 @@ void Nes_CPU::clock(){
                 subcycle = 3;
                 break;
             case 3:
-                write(tmp_high << 8 | tmp_low, A);
+                write((u_int16_t)(tmp_high << 8 | tmp_low), A);
                 subcycle = 0;
             } 
             break;
@@ -166,6 +182,76 @@ void Nes_CPU::clock(){
             } 
             break;
 
+        case 0x86: //STX zero page 2+1 cycles
+            
+            switch (subcycle)
+            {
+            case 1:
+                tmp_high = 0x00;
+                tmp_low = read(programCounter++);
+                subcycle = 2;
+                break;
+            case 2:
+                write((uint16_t)tmp_high << 8 | tmp_low, X);
+                subcycle = 0;
+                break;
+            }
+            break;
+            
+        case 0x8E: // STX Absolute 3+1 cycles
+            
+            switch (subcycle)
+            {
+            case 1:
+                tmp_low = read(programCounter++);
+                subcycle = 2;
+                break;
+            
+            case 2:
+                tmp_high = read(programCounter++);
+                subcycle = 3;
+                break;
+            case 3:
+                write(tmp_high << 8 | tmp_low, X);
+                subcycle = 0;
+            } 
+            break;
+
+        case 0x84: //STY zero page 2+1 cycles
+            
+            switch (subcycle)
+            {
+            case 1:
+                tmp_high = 0x00;
+                tmp_low = read(programCounter++);
+                subcycle = 2;
+                break;
+            case 2:
+                write((uint16_t)tmp_high << 8 | tmp_low, Y);
+                subcycle = 0;
+                break;
+            }
+            break;
+            
+        case 0x8C: // STY Absolute 3+1 cycles
+            
+            switch (subcycle)
+            {
+            case 1:
+                tmp_low = read(programCounter++);
+                subcycle = 2;
+                break;
+            
+            case 2:
+                tmp_high = read(programCounter++);
+                subcycle = 3;
+                break;
+            case 3:
+                write(tmp_high << 8 | tmp_low, Y);
+                subcycle = 0;
+            } 
+            break;
+        
         default:
             std::cout << "[ERROR] opcode not handled :" << std::hex << (uint16_t) opcode << std::endl;
             break;
