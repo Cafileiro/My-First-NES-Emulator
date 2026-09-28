@@ -17,10 +17,15 @@ int main() {
         std::cout << "[DEBUG] X current value: " << std::hex << (uint16_t)cpu.X << std::endl;
         std::cout << "[DEBUG] Y current value: " << std::hex << (uint16_t)cpu.Y << std::endl;
 
-    }
+    }    std::cout << "[DEBUG] 0002 Final value: " << std::hex << (uint16_t)cpu.Y << std::endl;
+
     std::cout << "[DEBUG] A Final value: " << std::hex << (uint16_t)cpu.A << std::endl;
     std::cout << "[DEBUG] X Final value: " << std::hex << (uint16_t)cpu.X << std::endl;
     std::cout << "[DEBUG] Y Final value: " << std::hex << (uint16_t)cpu.Y << std::endl;
+    std::cout << "[DEBUG] 0000 Final value: " << std::hex << (uint16_t)bus.read(0x0000) << std::endl;
+    std::cout << "[DEBUG] 0001 Final value: " << std::hex << (uint16_t)bus.read(0x0001) << std::endl;
+    std::cout << "[DEBUG] 0002 Final value: " << std::hex << (uint16_t)bus.read(0x0002) << std::endl;
+    std::cout << "[DEBUG] 0550 Final value: " << std::hex << (uint16_t)bus.read(0x0550) << std::endl;
 
     return 0;
 }

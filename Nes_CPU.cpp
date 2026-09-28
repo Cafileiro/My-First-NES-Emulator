@@ -53,53 +53,125 @@ void Nes_CPU::clock(){
         return;
     }
     std::cout << "[DEBUG] procesing opcode: " << std::hex << (uint16_t)opcode << " with subcycle: " << +subcycle << std::endl;
+
     switch (opcode)
     {
-    
-    case  0x02: // halt jeje
+        case  0x02: // halt jeje no more cycles today
 
-        cpuHalted=true;
-        break;
-    
-    case 0xA0: //LDY Inmediate
-
-        switch (subcycle)
-        {
-        case 1:
-            Y = read(programCounter++);
-            subcycle = 0;
+            cpuHalted=true;
             break;
-        }
-        break;
+        
+        case 0xA0: //LDY Inmediate 1+1 cyles
 
-    case 0xA2: //LDX Inmediate
-    
-        switch (subcycle)
+            switch (subcycle)
             {
             case 1:
-                X = read(programCounter++);
+                Y = read(programCounter++);
                 subcycle = 0;
                 break;
             }
             break;
-    
-    case 0xA9: //LDA Inmediate
-        
-        switch (subcycle)
-        {
-        case 1:
-            A = read(programCounter++);
-            subcycle = 0;
-            break; 
-        }
-        break;
-            Y = read(programCounter++);
-            subcycle = 0;
 
-    default:
-        std::cout << "[ERROR] opcode not handled :" << std::hex << (uint16_t) opcode << std::endl;
-        break;
+        case 0xA2: //LDX Inmediate 1+1 cycles
+        
+            switch (subcycle)
+                {
+                case 1:
+                    X = read(programCounter++);
+                    subcycle = 0;
+                    break;
+                }
+            break;
+        
+        case 0xA9: //LDA Inmediate 1+1 cycles
+            
+            switch (subcycle)
+            {
+            case 1:
+                A = read(programCounter++);
+                subcycle = 0;
+                break; 
+            }
+            break;
+        
+        case 0x85: //STA zero page 2+1 cycles
+            
+            switch (subcycle)
+            {
+            case 1:
+                tmp_high = 0x00;
+                tmp_low = read(programCounter++);
+                subcycle = 2;
+                break;
+            case 2:
+                write((uint16_t)tmp_high << 8 | tmp_low, A);
+                subcycle = 0;
+                break;
+            }
+            break;
+            
+        case 0x8D: // STA Absolute 3+1 cycles
+            
+            switch (subcycle)
+            {
+            case 1:
+                tmp_low = read(programCounter++);
+                subcycle = 2;
+                break;
+            
+            case 2:
+                tmp_high = read(programCounter++);
+                subcycle = 3;
+                break;
+            case 3:
+                write(tmp_high << 8 | tmp_low, A);
+                subcycle = 0;
+            } 
+            break;
+        
+        case 0xA5: // LDA Zero page 2+1 cycles
+            
+            switch (subcycle)
+            {
+            case 1:
+                tmp_high = 0x00;
+                tmp_low = read(programCounter++);
+                subcycle = 2;
+                break;
+            
+            case 2:
+                A = read(tmp_high << 8 | tmp_low);
+                subcycle = 0;
+                break;
+            }
+            break;
+        
+        case 0xAD: // LDA Absolute 3+1 cycles
+            
+            switch (subcycle)
+            {
+            case 1:
+                tmp_low = read(programCounter++);
+                subcycle = 2;
+                break;
+            
+            case 2:
+                tmp_high = read(programCounter++);
+                subcycle = 3;
+                break;
+            case 3:
+                A = read(tmp_high << 8 | tmp_low);
+                subcycle = 0;
+                break;
+            } 
+            break;
+
+        default:
+            std::cout << "[ERROR] opcode not handled :" << std::hex << (uint16_t) opcode << std::endl;
+            break;
     }
+
+
 }
 
 
