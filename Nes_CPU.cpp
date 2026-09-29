@@ -75,7 +75,7 @@ void Nes_CPU::clock(){
         case  0x02: // halt jeje no more cycles today
 
             cpuHalted=true;
-            break;
+        break;
         
         case 0xA0: //LDY Inmediate 1+1 cyles
 
@@ -86,7 +86,7 @@ void Nes_CPU::clock(){
                 subcycle = 0;
                 break;
             }
-            break;
+        break;
 
         case 0xA2: //LDX Inmediate 1+1 cycles
         
@@ -97,7 +97,7 @@ void Nes_CPU::clock(){
                     subcycle = 0;
                     break;
                 }
-            break;
+        break;
         
         case 0xA9: //LDA Inmediate 1+1 cycles
             
@@ -108,7 +108,7 @@ void Nes_CPU::clock(){
                 subcycle = 0;
                 break; 
             }
-            break;
+        break;
         
         case 0x85: //STA zero page 2+1 cycles
             
@@ -124,7 +124,7 @@ void Nes_CPU::clock(){
                 subcycle = 0;
                 break;
             }
-            break;
+        break;
             
         case 0x8D: // STA Absolute 3+1 cycles
             
@@ -143,7 +143,7 @@ void Nes_CPU::clock(){
                 write((u_int16_t)(tmp_high << 8 | tmp_low), A);
                 subcycle = 0;
             } 
-            break;
+        break;
         
         case 0xA5: // LDA Zero page 2+1 cycles
             
@@ -160,7 +160,7 @@ void Nes_CPU::clock(){
                 subcycle = 0;
                 break;
             }
-            break;
+        break;
         
         case 0xAD: // LDA Absolute 3+1 cycles
             
@@ -180,7 +180,7 @@ void Nes_CPU::clock(){
                 subcycle = 0;
                 break;
             } 
-            break;
+        break;
 
         case 0x86: //STX zero page 2+1 cycles
             
@@ -196,7 +196,7 @@ void Nes_CPU::clock(){
                 subcycle = 0;
                 break;
             }
-            break;
+        break;
             
         case 0x8E: // STX Absolute 3+1 cycles
             
@@ -215,7 +215,7 @@ void Nes_CPU::clock(){
                 write(tmp_high << 8 | tmp_low, X);
                 subcycle = 0;
             } 
-            break;
+        break;
 
         case 0x84: //STY zero page 2+1 cycles
             
@@ -231,7 +231,7 @@ void Nes_CPU::clock(){
                 subcycle = 0;
                 break;
             }
-            break;
+        break;
             
         case 0x8C: // STY Absolute 3+1 cycles
             
@@ -250,11 +250,45 @@ void Nes_CPU::clock(){
                 write(tmp_high << 8 | tmp_low, Y);
                 subcycle = 0;
             } 
-            break;
+        break;
         
+        case 0xD0: // BNE
+            switch (subcycle)
+            {
+            case 1:
+                tmp_low = read(programCounter++);
+
+                if (!flag_Zero) subcycle = 2;
+                else subcycle = 0;
+                
+                break;
+            case 2:
+                if(tmp_low > 127) tmp_low -= 256;
+                tmp_addr = programCounter;
+                tmp_addr = tmp_addr + tmp_low;
+                if ((tmp_addr xor programCounter) >> 8 != 0x0000){
+                    //Si altera el high byte
+                    programCounter = programCounter | tmp_low;
+                    flag_Carry = true;
+                    subcycle = 3;
+                }else{
+                    //no altera el high byte
+                    programCounter = (u_int16_t)(programCounter + tmp_low);
+                    subcycle = 0;
+                }
+                break;
+            case 3:
+                programCounter = programCounter + 0x0100;
+                subcycle = 0;
+                break;
+            }
+
+        break;
+
         default:
             std::cout << "[ERROR] opcode not handled :" << std::hex << (uint16_t) opcode << std::endl;
-            break;
+            cpuHalted = true;
+        break;
     }
 
 
