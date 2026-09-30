@@ -24,6 +24,14 @@ void Nes_Bus::initializeRom(){
     }
 }
 
+void Nes_Bus::pushStack(uint8_t data){
+    //TODO
+}
+
+uint8_t Nes_Bus::pullStack(){
+    //TODO
+}
+
 uint8_t Nes_Bus::read(uint16_t address){
     
     if (address <= 0x1FFF){

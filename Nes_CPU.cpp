@@ -50,6 +50,16 @@ void Nes_CPU::connectRom(){
     m_bus->initializeRom();
 }
 
+void Nes_CPU::pushStack(uint8_t data){
+    m_bus->pushStack(data);
+    //TODO:actualizar puntero
+}
+
+uint8_t Nes_CPU::pullStack(){
+    //TODO:atualizar puntero
+    return m_bus->pullStack();
+}
+
 void Nes_CPU::update_flags(u_int8_t data){
 
     if(data == 0) flag_Zero = true;
@@ -84,6 +94,7 @@ void Nes_CPU::clock(){
             case 1:
                 Y = read(programCounter++);
                 subcycle = 0;
+                update_flags(Y);
                 break;
             }
         break;
@@ -95,6 +106,7 @@ void Nes_CPU::clock(){
                 case 1:
                     X = read(programCounter++);
                     subcycle = 0;
+                    update_flags(X);
                     break;
                 }
         break;
@@ -106,6 +118,7 @@ void Nes_CPU::clock(){
             case 1:
                 A = read(programCounter++);
                 subcycle = 0;
+                update_flags(A);
                 break; 
             }
         break;
@@ -158,6 +171,7 @@ void Nes_CPU::clock(){
             case 2:
                 A = read(tmp_high << 8 | tmp_low);
                 subcycle = 0;
+                update_flags(A);
                 break;
             }
         break;
@@ -178,6 +192,7 @@ void Nes_CPU::clock(){
             case 3:
                 A = read(tmp_high << 8 | tmp_low);
                 subcycle = 0;
+                update_flags(A);
                 break;
             } 
         break;
@@ -269,7 +284,96 @@ void Nes_CPU::clock(){
                 if ((tmp_addr xor programCounter) >> 8 != 0x0000){
                     //Si altera el high byte
                     programCounter = programCounter | tmp_low;
-                    flag_Carry = true;
+                    subcycle = 3;
+                }else{
+                    //no altera el high byte
+                    programCounter = (u_int16_t)(programCounter + tmp_low);
+                    subcycle = 0;
+                }
+                break;
+            case 3:
+                programCounter = programCounter + 0x0100;
+                subcycle = 0;
+                break;
+            }
+
+            case 0xF0: // BEQ
+            switch (subcycle)
+            {
+            case 1:
+                tmp_low = read(programCounter++);
+
+                if (flag_Zero) subcycle = 2;
+                else subcycle = 0;
+                
+                break;
+            case 2:
+                if(tmp_low > 127) tmp_low -= 256;
+                tmp_addr = programCounter;
+                tmp_addr = tmp_addr + tmp_low;
+                if ((tmp_addr xor programCounter) >> 8 != 0x0000){
+                    //Si altera el high byte
+                    programCounter = programCounter | tmp_low;
+                    subcycle = 3;
+                }else{
+                    //no altera el high byte
+                    programCounter = (u_int16_t)(programCounter + tmp_low);
+                    subcycle = 0;
+                }
+                break;
+            case 3:
+                programCounter = programCounter + 0x0100;
+                subcycle = 0;
+                break;
+            }
+
+            case 0x10: // BPL
+            switch (subcycle)
+            {
+            case 1:
+                tmp_low = read(programCounter++);
+
+                if (!flag_Negative) subcycle = 2;
+                else subcycle = 0;
+                
+                break;
+            case 2:
+                if(tmp_low > 127) tmp_low -= 256;
+                tmp_addr = programCounter;
+                tmp_addr = tmp_addr + tmp_low;
+                if ((tmp_addr xor programCounter) >> 8 != 0x0000){
+                    //Si altera el high byte
+                    programCounter = programCounter | tmp_low;
+                    subcycle = 3;
+                }else{
+                    //no altera el high byte
+                    programCounter = (u_int16_t)(programCounter + tmp_low);
+                    subcycle = 0;
+                }
+                break;
+            case 3:
+                programCounter = programCounter + 0x0100;
+                subcycle = 0;
+                break;
+            }
+
+            case 0x30: // BNE
+            switch (subcycle)
+            {
+            case 1:
+                tmp_low = read(programCounter++);
+
+                if (flag_Negative) subcycle = 2;
+                else subcycle = 0;
+                
+                break;
+            case 2:
+                if(tmp_low > 127) tmp_low -= 256;
+                tmp_addr = programCounter;
+                tmp_addr = tmp_addr + tmp_low;
+                if ((tmp_addr xor programCounter) >> 8 != 0x0000){
+                    //Si altera el high byte
+                    programCounter = programCounter | tmp_low;
                     subcycle = 3;
                 }else{
                     //no altera el high byte

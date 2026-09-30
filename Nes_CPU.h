@@ -11,6 +11,9 @@ private:
     uint8_t read(uint16_t address);
     void    write(uint16_t address, uint8_t data);
 
+    void pushStack(uint8_t data);
+    uint8_t pullStack();
+
     // Innerstates
     uint8_t opcode = 0x00;
     uint8_t subcycle = 0;
@@ -19,6 +22,7 @@ private:
     uint8_t  tmp_low = 0x00;
     uint8_t  tmp_high = 0x00;
     uint16_t tmp_addr = 0x0000;
+    uint8_t stack_pointer = 0x00;
 
     bool flag_Carry;
     bool flag_Zero;

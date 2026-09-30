@@ -16,6 +16,9 @@ public:
     void write(uint16_t address, uint8_t data);
     void initializeRom();
 
+    uint8_t pullStack();
+    void pushStack(uint8_t data);
+
     std::array<uint8_t,0x800> ram{};
     std::array<uint8_t,16> rom_header{};
     std::array<uint8_t,0x8000> rom{};
