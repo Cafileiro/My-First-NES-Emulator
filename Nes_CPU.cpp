@@ -477,7 +477,7 @@ void Nes_CPU::clock(){
                 break;
             }
 
-            case 0xB00: // BCS
+            case 0xB0: // BCS
             switch (subcycle)
             {
             case 1:
