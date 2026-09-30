@@ -22,7 +22,6 @@ private:
     uint8_t  tmp_low = 0x00;
     uint8_t  tmp_high = 0x00;
     uint16_t tmp_addr = 0x0000;
-    uint8_t stack_pointer = 0x00;
 
     bool flag_Carry;
     bool flag_Zero;

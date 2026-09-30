@@ -19,6 +19,8 @@ public:
     uint8_t pullStack();
     void pushStack(uint8_t data);
 
+    uint8_t stackPointer = 0x00;
+
     std::array<uint8_t,0x800> ram{};
     std::array<uint8_t,16> rom_header{};
     std::array<uint8_t,0x8000> rom{};

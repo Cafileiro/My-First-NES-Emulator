@@ -25,11 +25,11 @@ void Nes_Bus::initializeRom(){
 }
 
 void Nes_Bus::pushStack(uint8_t data){
-    //TODO
+    write(((uint16_t)0x100 + stackPointer), data);
 }
 
 uint8_t Nes_Bus::pullStack(){
-    //TODO
+    return read(((uint16_t) 0x100 + stackPointer));
 }
 
 uint8_t Nes_Bus::read(uint16_t address){
